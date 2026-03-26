@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
+from pathlib import Path
 from typing import NoReturn
 
 from claude_utils.purge import run_purge
@@ -50,9 +52,10 @@ def main(argv: list[str] | None = None) -> NoReturn:
         sys.exit(1)
 
     if args.command == "purge":
+        claude_dir = args.claude_dir or os.environ.get("CLAUDE_DIR") or str(Path.home() / ".claude")
         sys.exit(
             run_purge(
-                claude_dir=args.claude_dir,
+                claude_dir=claude_dir,
                 dry_run=args.dry_run,
                 yes=args.yes,
             )

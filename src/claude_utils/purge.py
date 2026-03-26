@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 import re
 import shutil
 import sys
@@ -211,30 +210,29 @@ def _execute_purge(targets: list[Path], claude_dir: Path) -> PurgeResult:
     projects_prefix = claude_dir / "projects"
 
     for target in targets:
-        if target.is_dir():
-            # For top-level dirs, clear contents but keep the directory
-            try:
-                target.relative_to(projects_prefix)
-                # Project transcript dir: remove entirely
-                size = _dir_size(target)
-                shutil.rmtree(target)
-                result.dirs_removed.append(str(target))
-                result.bytes_freed += size
-            except ValueError:
-                # Top-level dir: clear contents, keep dir
-                size = _dir_size(target)
-                for child in target.iterdir():
-                    if child.is_dir():
-                        shutil.rmtree(child)
-                    else:
-                        child.unlink()
-                result.dirs_removed.append(str(target))
-                result.bytes_freed += size
-        elif target.is_file():
+        if target.is_file():
             size = target.stat().st_size
             target.unlink()
             result.files_removed.append(str(target))
             result.bytes_freed += size
+            continue
+
+        if not target.is_dir():
+            continue
+
+        size = _dir_size(target)
+        if target.is_relative_to(projects_prefix):
+            # Project transcript dir: remove entirely
+            shutil.rmtree(target)
+        else:
+            # Top-level dir: clear contents, keep dir
+            for child in target.iterdir():
+                if child.is_dir():
+                    shutil.rmtree(child)
+                else:
+                    child.unlink()
+        result.dirs_removed.append(str(target))
+        result.bytes_freed += size
 
     # Remove empty project directories
     projects_dir = claude_dir / "projects"
@@ -250,19 +248,12 @@ def _execute_purge(targets: list[Path], claude_dir: Path) -> PurgeResult:
 
 
 def run_purge(
-    claude_dir: str | None = None,
+    claude_dir: str,
     dry_run: bool = False,
     yes: bool = False,
 ) -> int:
     """Main purge entrypoint. Returns exit code."""
-    if claude_dir is None:
-        claude_dir_env = os.environ.get("CLAUDE_DIR")
-        if claude_dir_env:
-            path = Path(claude_dir_env)
-        else:
-            path = Path.home() / ".claude"
-    else:
-        path = Path(claude_dir)
+    path = Path(claude_dir)
 
     if not path.is_dir():
         print(f"Error: {path} does not exist or is not a directory", file=sys.stderr)
