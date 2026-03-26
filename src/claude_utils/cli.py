@@ -2,66 +2,32 @@
 
 from __future__ import annotations
 
-import argparse
-import os
 import sys
 from pathlib import Path
-from typing import NoReturn
+
+import click
 
 from claude_utils.purge import run_purge
 
 
-def _create_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        prog="claude-utils",
-        description="Utilities for managing Claude Code local data.",
-    )
-    subparsers = parser.add_subparsers(dest="command", metavar="COMMAND")
-
-    purge_parser = subparsers.add_parser(
-        "purge",
-        help="Remove conversation history, debug logs, and other transient data",
-    )
-    purge_parser.add_argument(
-        "--claude-dir",
-        default=None,
-        help="Path to .claude directory (default: ~/.claude)",
-    )
-    purge_parser.add_argument(
-        "-n",
-        "--dry-run",
-        action="store_true",
-        help="Show what would be deleted without deleting anything",
-    )
-    purge_parser.add_argument(
-        "-y",
-        "--yes",
-        action="store_true",
-        help="Skip confirmation prompt",
-    )
-
-    return parser
+@click.group()
+def main() -> None:
+    """Utilities for managing Claude Code local data."""
 
 
-def main(argv: list[str] | None = None) -> NoReturn:
-    parser = _create_parser()
-    args = parser.parse_args(argv)
-
-    if args.command is None:
-        parser.print_help()
-        sys.exit(1)
-
-    if args.command == "purge":
-        claude_dir = args.claude_dir or os.environ.get("CLAUDE_DIR") or str(Path.home() / ".claude")
-        sys.exit(
-            run_purge(
-                claude_dir=claude_dir,
-                dry_run=args.dry_run,
-                yes=args.yes,
-            )
-        )
-
-    sys.exit(1)
+@main.command()
+@click.option(
+    "--claude-dir",
+    envvar="CLAUDE_DIR",
+    default=str(Path.home() / ".claude"),
+    show_default=True,
+    help="Path to .claude directory.",
+)
+@click.option("-n", "--dry-run", is_flag=True, help="Show what would be deleted without deleting.")
+@click.option("-y", "--yes", is_flag=True, help="Skip confirmation prompt.")
+def purge(claude_dir: str, dry_run: bool, yes: bool) -> None:
+    """Remove conversation history, debug logs, and other transient data."""
+    sys.exit(run_purge(claude_dir=claude_dir, dry_run=dry_run, yes=yes))
 
 
 if __name__ == "__main__":

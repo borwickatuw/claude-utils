@@ -37,6 +37,9 @@ wheels = [
 [[package]]
 name = "claude-utils"
 source = { editable = "." }
+dependencies = [
+    { name = "click" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -46,6 +49,7 @@ dev = [
 ]
 
 [package.metadata]
+requires-dist = [{ name = "click", specifier = ">=8.3.1" }]
 
 [package.metadata.requires-dev]
 dev = [
