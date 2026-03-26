@@ -50,11 +50,13 @@ def main(argv: list[str] | None = None) -> NoReturn:
         sys.exit(1)
 
     if args.command == "purge":
-        sys.exit(run_purge(
-            claude_dir=args.claude_dir,
-            dry_run=args.dry_run,
-            yes=args.yes,
-        ))
+        sys.exit(
+            run_purge(
+                claude_dir=args.claude_dir,
+                dry_run=args.dry_run,
+                yes=args.yes,
+            )
+        )
 
     sys.exit(1)
 

@@ -151,10 +151,7 @@ def _print_plan(targets: list[Path], total_bytes: int, claude_dir: Path) -> None
     if project_targets:
         n_projects = len(project_targets)
         n_transcripts = sum(len(v) for v in project_targets.values())
-        print(
-            f"Conversation transcripts: {n_transcripts} items "
-            f"across {n_projects} projects"
-        )
+        print(f"Conversation transcripts: {n_transcripts} items " f"across {n_projects} projects")
 
     print(f"\nTotal to free: {_format_size(total_bytes)}")
 
