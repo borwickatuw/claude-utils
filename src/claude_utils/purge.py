@@ -76,6 +76,14 @@ def _is_empty_dir(path: Path) -> bool:
     return True
 
 
+def _rmtree_empty(path: Path) -> None:
+    """Remove a directory tree that contains only empty subdirectories."""
+    for child in path.iterdir():
+        if child.is_dir():
+            _rmtree_empty(child)
+    path.rmdir()
+
+
 def _scan_project_transcripts(project_dir: Path) -> list[Path]:
     """Find conversation transcript dirs and files inside a project directory."""
     targets: list[Path] = []
@@ -228,7 +236,7 @@ def _execute_purge(targets: list[Path], claude_dir: Path) -> PurgeResult:
             if not project.is_dir():
                 continue
             if _is_empty_dir(project):
-                project.rmdir()
+                _rmtree_empty(project)
                 result.dirs_removed.append(str(project))
 
     return result
