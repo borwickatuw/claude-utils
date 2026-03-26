@@ -14,10 +14,16 @@ UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]
 
 # Top-level directories whose contents are safe to purge entirely
 PURGEABLE_DIRS = [
+    "backups",
+    "cache",
     "debug",
     "file-history",
     "paste-cache",
     "plans",
+    "session-env",
+    "sessions",
+    "shell-snapshots",
+    "statsig",
     "tasks",
     "telemetry",
     "todos",
@@ -26,6 +32,7 @@ PURGEABLE_DIRS = [
 # Top-level files safe to truncate/remove
 PURGEABLE_FILES = [
     "history.jsonl",
+    "mcp-needs-auth-cache.json",
     "stats-cache.json",
 ]
 
