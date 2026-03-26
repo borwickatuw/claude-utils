@@ -66,6 +66,16 @@ def _format_size(nbytes: int) -> str:
     return f"{nbytes} B"
 
 
+def _is_empty_dir(path: Path) -> bool:
+    """Check if a directory is empty or contains only empty subdirectories."""
+    for child in path.iterdir():
+        if child.is_file():
+            return False
+        if child.is_dir() and not _is_empty_dir(child):
+            return False
+    return True
+
+
 def _scan_project_transcripts(project_dir: Path) -> list[Path]:
     """Find conversation transcript dirs and files inside a project directory."""
     targets: list[Path] = []
@@ -79,8 +89,22 @@ def _scan_project_transcripts(project_dir: Path) -> list[Path]:
     return targets
 
 
-def _collect_targets(claude_dir: Path) -> tuple[list[Path], int]:
-    """Collect all paths to purge and their total size."""
+def _would_be_empty_after_purge(project_dir: Path, purge_targets: set[Path]) -> bool:
+    """Check if a project dir would be empty after removing the given targets."""
+    for child in project_dir.iterdir():
+        if child not in purge_targets:
+            # Something would remain -- but is it an empty dir?
+            if child.is_dir() and _is_empty_dir(child):
+                continue
+            return False
+    return True
+
+
+def _collect_targets(claude_dir: Path) -> tuple[list[Path], int, int]:
+    """Collect all paths to purge and their total size.
+
+    Returns (targets, total_bytes, empty_project_count).
+    """
     targets: list[Path] = []
     total_bytes = 0
 
@@ -102,23 +126,30 @@ def _collect_targets(claude_dir: Path) -> tuple[list[Path], int]:
             total_bytes += size
 
     # Project conversation transcripts
+    empty_projects = 0
     projects_dir = claude_dir / "projects"
     if projects_dir.is_dir():
         for project in sorted(projects_dir.iterdir()):
             if not project.is_dir():
                 continue
+            project_purge: list[Path] = []
             for target in _scan_project_transcripts(project):
                 if target.is_dir():
                     size = _dir_size(target)
                 else:
                     size = _file_size(target)
-                targets.append(target)
+                project_purge.append(target)
                 total_bytes += size
+            targets.extend(project_purge)
+            if project_purge and _would_be_empty_after_purge(project, set(project_purge)):
+                empty_projects += 1
 
-    return targets, total_bytes
+    return targets, total_bytes, empty_projects
 
 
-def _print_plan(targets: list[Path], total_bytes: int, claude_dir: Path) -> None:
+def _print_plan(
+    targets: list[Path], total_bytes: int, empty_projects: int, claude_dir: Path
+) -> None:
     """Print a summary of what will be purged."""
     # Group by category for readable output
     top_dirs: list[Path] = []
@@ -151,7 +182,9 @@ def _print_plan(targets: list[Path], total_bytes: int, claude_dir: Path) -> None
     if project_targets:
         n_projects = len(project_targets)
         n_transcripts = sum(len(v) for v in project_targets.values())
-        print(f"Conversation transcripts: {n_transcripts} items " f"across {n_projects} projects")
+        print(f"Conversation transcripts: {n_transcripts} items across {n_projects} projects")
+        if empty_projects:
+            print(f"Empty project directories to remove: {empty_projects}")
 
     print(f"\nTotal to free: {_format_size(total_bytes)}")
 
@@ -188,6 +221,16 @@ def _execute_purge(targets: list[Path], claude_dir: Path) -> PurgeResult:
             result.files_removed.append(str(target))
             result.bytes_freed += size
 
+    # Remove empty project directories
+    projects_dir = claude_dir / "projects"
+    if projects_dir.is_dir():
+        for project in sorted(projects_dir.iterdir()):
+            if not project.is_dir():
+                continue
+            if _is_empty_dir(project):
+                project.rmdir()
+                result.dirs_removed.append(str(project))
+
     return result
 
 
@@ -210,13 +253,13 @@ def run_purge(
         print(f"Error: {path} does not exist or is not a directory", file=sys.stderr)
         return 1
 
-    targets, total_bytes = _collect_targets(path)
+    targets, total_bytes, empty_projects = _collect_targets(path)
 
     if not targets:
         print("Nothing to purge.")
         return 0
 
-    _print_plan(targets, total_bytes, path)
+    _print_plan(targets, total_bytes, empty_projects, path)
 
     if dry_run:
         print("\n(dry run -- nothing was deleted)")
