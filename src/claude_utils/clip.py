@@ -1,0 +1,74 @@
+"""Clean clipboard text copied from Claude Code terminal output."""
+
+from __future__ import annotations
+
+import re
+import subprocess
+import sys
+import textwrap
+
+# Zero-width and invisible Unicode characters
+INVISIBLE_CHARS = frozenset(
+    {
+        "\u200b",  # zero-width space
+        "\u200c",  # zero-width non-joiner
+        "\u200d",  # zero-width joiner
+        "\u2060",  # word joiner
+        "\ufeff",  # zero-width no-break space (BOM)
+        "\u00ad",  # soft hyphen
+        "\u200e",  # left-to-right mark
+        "\u200f",  # right-to-left mark
+        "\u2061",  # function application
+        "\u2062",  # invisible times
+        "\u2063",  # invisible separator
+        "\u2064",  # invisible plus
+    }
+)
+
+
+def clean_clipboard_text(text: str) -> str:
+    """Clean up text copied from Claude Code terminal output."""
+    # Strip trailing whitespace per line (Claude Code pads lines to terminal width)
+    lines = text.split("\n")
+    stripped = "\n".join(line.rstrip() for line in lines)
+    # Remove zero-width / invisible Unicode characters
+    cleaned = "".join(ch for ch in stripped if ch not in INVISIBLE_CHARS)
+    # Remove common leading indentation (Claude Code adds 2-space indent to code blocks)
+    return textwrap.dedent(cleaned)
+
+
+def rewrap_text(text: str) -> str:
+    """Join soft-wrapped lines into paragraphs, preserving paragraph breaks."""
+    # Strip the ⏺ marker Claude Code puts at the start of blocks
+    text = re.sub(r"^⏺\s*", "", text)
+    # Split into paragraphs on blank lines
+    paragraphs = re.split(r"\n\n+", text)
+    # Within each paragraph, collapse newlines and surrounding whitespace into a single space
+    joined = []
+    for para in paragraphs:
+        para = para.strip()
+        if para:
+            joined.append(re.sub(r"\s*\n\s*", " ", para))
+    return "\n\n".join(joined) + "\n-- Claude Code"
+
+
+def run_clip(text_mode: bool = False) -> int:
+    """Read clipboard, clean it, write back. Returns exit code."""
+    try:
+        result = subprocess.run(["pbpaste"], capture_output=True, text=True, check=True)
+    except FileNotFoundError:
+        print("error: pbpaste not found (macOS only)", file=sys.stderr)
+        return 1
+
+    original = result.stdout
+    cleaned = clean_clipboard_text(original)
+    if text_mode:
+        cleaned = rewrap_text(cleaned)
+
+    if original == cleaned:
+        print("clipboard already clean")
+        return 0
+
+    subprocess.run(["pbcopy"], input=cleaned, text=True, check=True)
+    print("cleaned clipboard")
+    return 0
