@@ -45,11 +45,11 @@ def rewrap_text(text: str) -> str:
     # Split into paragraphs on blank lines
     paragraphs = re.split(r"\n\n+", text)
     # Within each paragraph, collapse newlines and surrounding whitespace into a single space
-    joined = []
-    for para in paragraphs:
-        para = para.strip()
-        if para:
-            joined.append(re.sub(r"\s*\n\s*", " ", para))
+    joined = [
+        re.sub(r"\s*\n\s*", " ", para.strip())
+        for para in paragraphs
+        if para.strip()
+    ]
     return "\n\n".join(joined) + "\n-- Claude Code"
 
 
