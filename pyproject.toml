@@ -5,7 +5,7 @@ description = "Utilities for managing Claude Code local data (history, sessions,
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "BSD-3-Clause" }
-authors = [{ name = "John Borwick", email = "borwick@uw.edu" }]
+authors = [{ name = "University of Washington" }]
 keywords = ["claude", "cli", "cleanup", "records-management"]
 classifiers = [
     "Development Status :: 3 - Alpha",
