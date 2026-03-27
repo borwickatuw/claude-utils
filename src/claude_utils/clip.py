@@ -50,10 +50,10 @@ def rewrap_text(text: str) -> str:
         for para in paragraphs
         if para.strip()
     ]
-    return "\n\n".join(joined) + "\n-- Claude Code"
+    return "\n\n".join(joined)
 
 
-def run_clip(text_mode: bool = False) -> int:
+def run_clip(text_mode: bool = False, with_credit: bool = False) -> int:
     """Read clipboard, clean it, write back. Returns exit code."""
     try:
         original = pyperclip.paste()
@@ -64,6 +64,8 @@ def run_clip(text_mode: bool = False) -> int:
     cleaned = clean_clipboard_text(original)
     if text_mode:
         cleaned = rewrap_text(cleaned)
+    if with_credit:
+        cleaned = cleaned + "\n-- Claude Code"
 
     if original == cleaned:
         print("clipboard already clean")

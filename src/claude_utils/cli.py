@@ -33,9 +33,10 @@ def purge(claude_dir: str, dry_run: bool, yes: bool) -> None:
 
 @main.command()
 @click.option("-t", "--text", is_flag=True, help="Rewrap prose: join soft-wrapped lines into paragraphs.")
-def clip(text: bool) -> None:
+@click.option("--with-credit", is_flag=True, help="Append '-- Claude Code' attribution.")
+def clip(text: bool, with_credit: bool) -> None:
     """Clean up text copied from Claude Code terminal output."""
-    sys.exit(run_clip(text_mode=text))
+    sys.exit(run_clip(text_mode=text, with_credit=with_credit))
 
 
 if __name__ == "__main__":
