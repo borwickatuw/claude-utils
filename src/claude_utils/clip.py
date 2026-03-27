@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import re
-import subprocess
 import sys
 import textwrap
+
+import pyperclip
 
 # Zero-width and invisible Unicode characters
 INVISIBLE_CHARS = frozenset(
@@ -55,12 +56,11 @@ def rewrap_text(text: str) -> str:
 def run_clip(text_mode: bool = False) -> int:
     """Read clipboard, clean it, write back. Returns exit code."""
     try:
-        result = subprocess.run(["pbpaste"], capture_output=True, text=True, check=True)
-    except FileNotFoundError:
-        print("error: pbpaste not found (macOS only)", file=sys.stderr)
+        original = pyperclip.paste()
+    except pyperclip.PyperclipException as e:
+        print(f"error: {e}", file=sys.stderr)
         return 1
 
-    original = result.stdout
     cleaned = clean_clipboard_text(original)
     if text_mode:
         cleaned = rewrap_text(cleaned)
@@ -69,6 +69,6 @@ def run_clip(text_mode: bool = False) -> int:
         print("clipboard already clean")
         return 0
 
-    subprocess.run(["pbcopy"], input=cleaned, text=True, check=True)
+    pyperclip.copy(cleaned)
     print("cleaned clipboard")
     return 0
