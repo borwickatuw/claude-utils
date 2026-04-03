@@ -44,11 +44,9 @@ def rewrap_text(text: str) -> str:
     text = re.sub(r"^⏺\s*", "", text)
     # Split into paragraphs on blank lines
     paragraphs = re.split(r"\n\n+", text)
-    # Within each paragraph, collapse newlines and surrounding whitespace into a single space
+    # Within each paragraph, collapse newlines into a single space
     joined = [
-        re.sub(r"\s*\n\s*", " ", para.strip())
-        for para in paragraphs
-        if para.strip()
+        re.sub(r"\s*\n\s*", " ", para.strip()) for para in paragraphs if para.strip()
     ]
     return "\n\n".join(joined)
 
@@ -65,7 +63,7 @@ def run_clip(text_mode: bool = False, with_credit: bool = False) -> int:
     if text_mode:
         cleaned = rewrap_text(cleaned)
     if with_credit:
-        cleaned = cleaned + "\n-- Claude Code"
+        cleaned += "\n-- Claude Code"
 
     if original == cleaned:
         print("clipboard already clean")

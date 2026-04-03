@@ -62,13 +62,18 @@ def _file_size(path: Path) -> int:
     return 0
 
 
+_GB = 1_073_741_824
+_MB = 1_048_576
+_KB = 1024
+
+
 def _format_size(nbytes: int) -> str:
-    if nbytes >= 1_073_741_824:
-        return f"{nbytes / 1_073_741_824:.1f} GB"
-    if nbytes >= 1_048_576:
-        return f"{nbytes / 1_048_576:.1f} MB"
-    if nbytes >= 1024:
-        return f"{nbytes / 1024:.1f} KB"
+    if nbytes >= _GB:
+        return f"{nbytes / _GB:.1f} GB"
+    if nbytes >= _MB:
+        return f"{nbytes / _MB:.1f} MB"
+    if nbytes >= _KB:
+        return f"{nbytes / _KB:.1f} KB"
     return f"{nbytes} B"
 
 
@@ -96,9 +101,7 @@ def _scan_project_transcripts(project_dir: Path) -> list[Path]:
     for child in sorted(project_dir.iterdir()):
         if child.name in PROJECT_KEEP:
             continue
-        if UUID_RE.match(child.name):
-            targets.append(child)
-        elif child.name == "sessions-index.json":
+        if UUID_RE.match(child.name) or child.name == "sessions-index.json":
             targets.append(child)
     return targets
 
@@ -148,14 +151,13 @@ def _collect_targets(claude_dir: Path) -> tuple[list[Path], int, int]:
                 continue
             project_purge: list[Path] = []
             for target in _scan_project_transcripts(project):
-                if target.is_dir():
-                    size = _dir_size(target)
-                else:
-                    size = _file_size(target)
+                size = _dir_size(target) if target.is_dir() else _file_size(target)
                 project_purge.append(target)
                 total_bytes += size
             targets.extend(project_purge)
-            if project_purge and _would_be_empty_after_purge(project, set(project_purge)):
+            if project_purge and _would_be_empty_after_purge(
+                project, set(project_purge)
+            ):
                 empty_projects += 1
 
     return targets, total_bytes, empty_projects
@@ -196,7 +198,10 @@ def _print_plan(
     if project_targets:
         n_projects = len(project_targets)
         n_transcripts = sum(len(v) for v in project_targets.values())
-        print(f"Conversation transcripts: {n_transcripts} items across {n_projects} projects")
+        print(
+            f"Conversation transcripts: {n_transcripts} items"
+            f" across {n_projects} projects"
+        )
         if empty_projects:
             print(f"Empty project directories to remove: {empty_projects}")
 
@@ -277,7 +282,7 @@ def run_purge(
         except (EOFError, KeyboardInterrupt):
             print("\nAborted.")
             return 1
-        if response not in ("y", "yes"):
+        if response not in {"y", "yes"}:
             print("Aborted.")
             return 0
 

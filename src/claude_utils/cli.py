@@ -24,7 +24,9 @@ def main() -> None:
     show_default=True,
     help="Path to .claude directory.",
 )
-@click.option("-n", "--dry-run", is_flag=True, help="Show what would be deleted without deleting.")
+@click.option(
+    "-n", "--dry-run", is_flag=True, help="Show what would be deleted without deleting."
+)
 @click.option("-y", "--yes", is_flag=True, help="Skip confirmation prompt.")
 def purge(claude_dir: str, dry_run: bool, yes: bool) -> None:
     """Remove conversation history, debug logs, and other transient data."""
@@ -32,8 +34,15 @@ def purge(claude_dir: str, dry_run: bool, yes: bool) -> None:
 
 
 @main.command()
-@click.option("-t", "--text", is_flag=True, help="Rewrap prose: join soft-wrapped lines into paragraphs.")
-@click.option("--with-credit", is_flag=True, help="Append '-- Claude Code' attribution.")
+@click.option(
+    "-t",
+    "--text",
+    is_flag=True,
+    help="Rewrap prose: join soft-wrapped lines into paragraphs.",
+)
+@click.option(
+    "--with-credit", is_flag=True, help="Append '-- Claude Code' attribution."
+)
 def clip(text: bool, with_credit: bool) -> None:
     """Clean up text copied from Claude Code terminal output."""
     sys.exit(run_clip(text_mode=text, with_credit=with_credit))

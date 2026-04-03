@@ -1,6 +1,39 @@
+# Environment
+.env
+.env.*
+!.env.example
+
+# Python
 __pycache__/
-*.pyc
-.venv/
-dist/
+*.py[cod]
+*.so
 *.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Editor files
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Temporary files
+*.tmp
+*.bak
+
+# OS
+.DS_Store
+
+# Claude Code local settings
 .claude/

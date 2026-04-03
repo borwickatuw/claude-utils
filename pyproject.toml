@@ -38,22 +38,97 @@ packages = ["src/claude_utils"]
 [tool.hatch.build.targets.sdist]
 include = ["src/claude_utils"]
 
+[tool.uv]
+default-groups = ["dev", "test"]
+
 [dependency-groups]
 dev = [
-    "black>=24.0",
-    "isort>=5.13",
+    "ruff>=0.4",
+    "bandit>=1.7",
+    "pip-audit>=2.6",
+]
+test = [
     "pytest>=8.0",
+    "pytest-cov>=4.0",
 ]
 
-[tool.black]
-line-length = 100
-target-version = ["py312"]
+[tool.ruff.lint]
+preview = true
+select = [
+    "A",      # flake8-builtins
+    "ARG",    # flake8-unused-arguments
+    "B",      # flake8-bugbear
+    "BLE",    # flake8-blind-except
+    "C90",    # mccabe
+    "E",      # pycodestyle errors
+    "ERA",    # eradicate
+    "F",      # pyflakes
+    "FBT",    # flake8-boolean-trap
+    "N",      # pep8-naming
+    "PL",     # pylint
+    "S",      # flake8-bandit
+    "SIM",    # flake8-simplify
+    "T20",    # flake8-print
+    "TRY",    # tryceratops
+    "W",      # pycodestyle warnings
+]
 
-[tool.isort]
-profile = "black"
-line_length = 100
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-args = 5
+max-statements = 50
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "S101",    # assert in tests
+    "ARG002",  # unused fixture args
+    "PLR6301", # methods could be functions
+    "PLR2004", # magic values in assertions
+    "PLC2701", # private name imports
+    "PLC1901", # empty string comparisons in assertions
+]
+"src/claude_utils/purge.py" = [
+    "T20",     # print statements are the UI
+    "C901",    # run_purge complexity is inherent to interactive workflow
+    "PLR0912", # run_purge branches
+    "FBT001",  # boolean args are injected by Click framework
+    "FBT002",  # boolean defaults in Click-called functions
+]
+"src/claude_utils/clip.py" = [
+    "T20",     # print statements are the UI
+    "FBT001",  # boolean args in run_clip called by Click
+    "FBT002",  # boolean defaults in Click-called functions
+]
+"src/claude_utils/cli.py" = [
+    "T20",     # print statements are the UI
+    "FBT001",  # boolean args injected by Click framework
+]
+
+[tool.bandit]
+exclude_dirs = [".venv", "tests"]
+skips = ["B101"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
 addopts = "--strict-markers -ra --tb=short"
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = [
+    "*/__init__.py",
+    "*/conftest.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+]
+fail_under = 70
+show_missing = true
