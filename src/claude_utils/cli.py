@@ -8,6 +8,8 @@ from pathlib import Path
 import click
 
 from claude_utils.clip import run_clip
+from claude_utils.freq import run_freq
+from claude_utils.no_ansi import run_no_ansi
 from claude_utils.purge import run_purge
 
 
@@ -46,6 +48,25 @@ def purge(claude_dir: str, dry_run: bool, yes: bool) -> None:
 def clip(text: bool, with_credit: bool) -> None:
     """Clean up text copied from Claude Code terminal output."""
     sys.exit(run_clip(text_mode=text, with_credit=with_credit))
+
+
+@main.command()
+@click.option(
+    "-n",
+    "--limit",
+    type=int,
+    default=None,
+    help="Show only the top N entries.",
+)
+def freq(limit: int | None) -> None:
+    """Frequency count of stdin lines."""
+    sys.exit(run_freq(limit=limit))
+
+
+@main.command("no-ansi")
+def no_ansi() -> None:
+    """Strip ANSI escape sequences from stdin."""
+    sys.exit(run_no_ansi())
 
 
 if __name__ == "__main__":

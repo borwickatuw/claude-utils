@@ -105,6 +105,12 @@ max-statements = 50
     "T20",     # print statements are the UI
     "FBT001",  # boolean args injected by Click framework
 ]
+"src/claude_utils/freq.py" = [
+    "T20",     # print is the output mechanism
+]
+"src/claude_utils/no_ansi.py" = [
+    "T20",     # print is the output mechanism
+]
 
 [tool.bandit]
 exclude_dirs = [".venv", "tests"]
