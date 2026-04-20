@@ -1,6 +1,6 @@
 # claude-utils
 
-CLI utilities for managing Claude Code local data. Two commands: `purge` (clean history/sessions/telemetry) and `clip` (clean clipboard text from terminal output).
+CLI utilities for managing Claude Code local data. Commands: `purge` (clean history/sessions/telemetry), `clip` (clean clipboard text), `defaults` (manage Claude Code settings in `~/.claude/settings.json`), `freq` (frequency counts), `no-ansi` (strip ANSI codes).
 
 ## Related Projects
 

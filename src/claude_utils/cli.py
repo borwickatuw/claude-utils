@@ -8,6 +8,7 @@ from pathlib import Path
 import click
 
 from claude_utils.clip import run_clip
+from claude_utils.defaults import run_defaults_list, run_defaults_set
 from claude_utils.freq import run_freq
 from claude_utils.no_ansi import run_no_ansi
 from claude_utils.purge import run_purge
@@ -67,6 +68,18 @@ def freq(limit: int | None) -> None:
 def no_ansi() -> None:
     """Strip ANSI escape sequences from stdin."""
     sys.exit(run_no_ansi())
+
+
+@main.command()
+@click.argument("name", required=False)
+@click.argument("state", required=False, type=click.Choice(["on", "off"]))
+def defaults(name: str | None, state: str | None) -> None:
+    """Manage Claude Code defaults in ~/.claude/settings.json."""
+    if name is None:
+        sys.exit(run_defaults_list())
+    if state is None:
+        raise click.UsageError("Usage: claude-utils defaults <name> <on|off>")
+    sys.exit(run_defaults_set(name, state))
 
 
 if __name__ == "__main__":
