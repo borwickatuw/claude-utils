@@ -43,14 +43,14 @@ class TestDefaultsList:
             if "no-1m-context" in line:
                 assert "on" in line
 
-    def test_default_on_toggle_shows_on_when_absent(self, settings_file):
-        """Settings with default_state='on' show 'on' when key is absent."""
+    def test_unset_toggle_shows_dash(self, settings_file):
+        """Unset toggles show '-' rather than assuming a default."""
         runner = CliRunner()
         result = runner.invoke(main, ["defaults"])
         assert result.exit_code == 0
         for line in result.output.splitlines():
             if "spinner-tips" in line:
-                assert " on " in line
+                assert " - " in line
 
     def test_default_on_toggle_shows_off_when_false(self, settings_file):
         settings_file.write_text(json.dumps({"spinnerTipsEnabled": False}))

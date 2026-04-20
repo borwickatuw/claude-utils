@@ -13,7 +13,6 @@ SETTINGS_PATH = Path.home() / ".claude" / "settings.json"
 # kind: "toggle" — accepts on/off
 #   on_value  — value to write when "on"
 #   off_value — value to write when "off" (omit to remove the key instead)
-#   default_state — display state when key is absent ("off" if omitted)
 #
 # kind: "int" — accepts a number or "off" (to remove)
 #   min/max — optional bounds
@@ -42,7 +41,6 @@ MANAGED_DEFAULTS: dict[str, dict] = {
         "kind": "toggle",
         "on_value": True,
         "off_value": False,
-        "default_state": "on",
         "description": "Show spinner tips",
     },
     "git-instructions": {
@@ -50,7 +48,6 @@ MANAGED_DEFAULTS: dict[str, dict] = {
         "kind": "toggle",
         "on_value": True,
         "off_value": False,
-        "default_state": "on",
         "description": "Include built-in git instructions in prompt",
     },
     "respect-gitignore": {
@@ -58,7 +55,6 @@ MANAGED_DEFAULTS: dict[str, dict] = {
         "kind": "toggle",
         "on_value": True,
         "off_value": False,
-        "default_state": "on",
         "description": "Respect .gitignore in @ file picker",
     },
     "no-survey": {
@@ -138,23 +134,15 @@ def _remove_nested(data: dict, path: list[str]) -> None:
             del parent[p]
 
 
-def _display_toggle(settings: dict, spec: dict) -> str:
-    """Return 'on' or 'off' for a toggle setting."""
-    found, value = _get_nested(settings, spec["path"])
-    if not found:
-        return spec.get("default_state", "off")
-    if value == spec["on_value"]:
-        return "on"
-    if "off_value" in spec and value == spec["off_value"]:
-        return "off"
-    return "off"
-
-
-def _display_int(settings: dict, spec: dict) -> str:
-    """Return the current value or '-' for an int setting."""
+def _display_state(settings: dict, spec: dict) -> str:
+    """Return the display state: on/off for toggles, value for ints, '-' if unset."""
     found, value = _get_nested(settings, spec["path"])
     if not found:
         return "-"
+    if spec["kind"] == "toggle":
+        if value == spec["on_value"]:
+            return "on"
+        return "off"
     return str(value)
 
 
@@ -162,10 +150,7 @@ def run_defaults_list() -> int:
     """Show current state of all managed defaults. Returns exit code."""
     settings = _read_settings()
     for name, spec in MANAGED_DEFAULTS.items():
-        if spec["kind"] == "toggle":
-            state = _display_toggle(settings, spec)
-        else:
-            state = _display_int(settings, spec)
+        state = _display_state(settings, spec)
         print(f"  {name:20s} {state:5s}  {spec['description']}")
     return 0
 
