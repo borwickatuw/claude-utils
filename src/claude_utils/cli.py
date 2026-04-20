@@ -72,13 +72,13 @@ def no_ansi() -> None:
 
 @main.command()
 @click.argument("name", required=False)
-@click.argument("state", required=False, type=click.Choice(["on", "off"]))
+@click.argument("state", required=False)
 def defaults(name: str | None, state: str | None) -> None:
     """Manage Claude Code defaults in ~/.claude/settings.json."""
     if name is None:
         sys.exit(run_defaults_list())
     if state is None:
-        raise click.UsageError("Usage: claude-utils defaults <name> <on|off>")
+        raise click.UsageError("Usage: claude-utils defaults <name> <on|off|value>")
     sys.exit(run_defaults_set(name, state))
 
 
