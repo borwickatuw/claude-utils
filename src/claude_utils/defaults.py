@@ -84,7 +84,7 @@ def _read_settings() -> dict:
     """Read settings.json, returning {} if missing or empty."""
     if not SETTINGS_PATH.exists():
         return {}
-    text = SETTINGS_PATH.read_text()
+    text = SETTINGS_PATH.read_text(encoding="utf-8")
     if not text.strip():
         return {}
     return json.loads(text)
@@ -93,7 +93,10 @@ def _read_settings() -> dict:
 def _write_settings(settings: dict) -> None:
     """Write settings.json with consistent formatting."""
     SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    SETTINGS_PATH.write_text(json.dumps(settings, indent=2) + "\n")
+    SETTINGS_PATH.write_text(
+        json.dumps(settings, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
 
 def _get_nested(data: dict, path: list[str]) -> tuple[bool, object]:
@@ -157,7 +160,7 @@ def run_defaults_list() -> int:
 
 def _validate_toggle(state: str, name: str) -> str | None:
     """Validate toggle state. Returns error message or None."""
-    if state not in ("on", "off"):
+    if state not in {"on", "off"}:
         return f"Error: {name!r} accepts 'on' or 'off', got {state!r}"
     return None
 

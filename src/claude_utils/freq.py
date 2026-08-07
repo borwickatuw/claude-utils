@@ -6,7 +6,7 @@ import sys
 from collections import Counter
 
 
-def run_freq(limit: int | None = None) -> int:
+def run_freq(limit: int | None) -> int:
     """Read stdin lines, print frequency-sorted counts. Returns exit code."""
     counts = Counter(line.rstrip("\n") for line in sys.stdin)
     items = counts.most_common(limit)

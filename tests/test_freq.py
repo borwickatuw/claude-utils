@@ -1,14 +1,13 @@
 """Tests for frequency counting utility."""
 
 import io
+import sys
 
 from claude_utils.freq import run_freq
 
 
 def _run(input_text: str, limit: int | None = None) -> str:
     """Run run_freq with given stdin and capture stdout."""
-    import sys
-
     old_stdin, old_stdout = sys.stdin, sys.stdout
     sys.stdin = io.StringIO(input_text)
     sys.stdout = captured = io.StringIO()

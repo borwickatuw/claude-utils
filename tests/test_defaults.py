@@ -34,7 +34,9 @@ class TestDefaultsList:
         assert "no-1m-context" in result.output
 
     def test_shows_on_when_set(self, settings_file):
-        settings_file.write_text(json.dumps({"env": {"CLAUDE_CODE_DISABLE_1M_CONTEXT": "1"}}))
+        settings_file.write_text(
+            json.dumps({"env": {"CLAUDE_CODE_DISABLE_1M_CONTEXT": "1"}})
+        )
         runner = CliRunner()
         result = runner.invoke(main, ["defaults"])
         assert result.exit_code == 0
@@ -90,7 +92,9 @@ class TestDefaultsSetToggle:
         assert data["env"]["CLAUDE_CODE_DISABLE_1M_CONTEXT"] == "1"
 
     def test_set_off_removes_key(self, settings_file):
-        settings_file.write_text(json.dumps({"env": {"CLAUDE_CODE_DISABLE_1M_CONTEXT": "1"}}))
+        settings_file.write_text(
+            json.dumps({"env": {"CLAUDE_CODE_DISABLE_1M_CONTEXT": "1"}})
+        )
         runner = CliRunner()
         result = runner.invoke(main, ["defaults", "no-1m-context", "off"])
         assert result.exit_code == 0

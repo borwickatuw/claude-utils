@@ -1,14 +1,13 @@
 """Tests for ANSI escape stripping utility."""
 
 import io
+import sys
 
 from claude_utils.no_ansi import ANSI_ESCAPE, run_no_ansi
 
 
 def _run(input_text: str) -> str:
     """Run run_no_ansi with given stdin and capture stdout."""
-    import sys
-
     old_stdin, old_stdout = sys.stdin, sys.stdout
     sys.stdin = io.StringIO(input_text)
     sys.stdout = captured = io.StringIO()
@@ -49,11 +48,11 @@ class TestNoAnsi:
 
     def test_regex_matches_common_sequences(self):
         cases = [
-            "\x1b[0m",      # reset
-            "\x1b[31m",     # red
-            "\x1b[1;32m",   # bold green
+            "\x1b[0m",  # reset
+            "\x1b[31m",  # red
+            "\x1b[1;32m",  # bold green
             "\x1b[38;5;82m",  # 256-color
-            "\x1b[K",       # erase to end of line
+            "\x1b[K",  # erase to end of line
         ]
         for seq in cases:
             assert ANSI_ESCAPE.sub("", seq) == "", f"Failed to match {repr(seq)}"
