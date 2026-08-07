@@ -45,7 +45,6 @@ default-groups = ["dev", "test"]
 dev = [
     "ruff>=0.4",
     "bandit>=1.7",
-    "pip-audit>=2.6",
 ]
 test = [
     "pytest>=8.0",
@@ -70,6 +69,7 @@ select = [
     "SIM",    # flake8-simplify
     "T20",    # flake8-print
     "TRY",    # tryceratops
+    "UP",     # pyupgrade — enforces modern type hints (3.10+ syntax)
     "W",      # pycodestyle warnings
 ]
 
@@ -104,6 +104,10 @@ max-statements = 50
 "src/claude_utils/cli.py" = [
     "T20",     # print statements are the UI
     "FBT001",  # boolean args injected by Click framework
+    "TRY003",  # click.UsageError messages are the UX
+]
+"src/claude_utils/defaults.py" = [
+    "T20",     # print statements are the UI
 ]
 "src/claude_utils/freq.py" = [
     "T20",     # print is the output mechanism
