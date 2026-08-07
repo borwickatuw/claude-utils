@@ -142,3 +142,8 @@ exclude_lines = [
 ]
 fail_under = 70
 show_missing = true
+
+[tool.pysmelly]
+# Standard exclude (PYSMELLY-REVIEW.md Practice 5): tests analyzed separately;
+# test-blindness tradeoff documented there.
+exclude = ["tests/"]
